@@ -8,6 +8,7 @@ TagManager:
   - Sanke
   - Food
   - FoodGenerator
+  - SnakeBody
   layers:
   - Default
   - TransparentFX

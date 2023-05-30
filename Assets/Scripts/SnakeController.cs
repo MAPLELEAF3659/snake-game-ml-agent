@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using UnityEngine;
 
@@ -15,10 +17,16 @@ public class SnakeController : MonoBehaviour
 {
     GameController gameController;
 
+    [SerializeField]
+    GameObject snakeBody;
+    List<GameObject> snakeBodies = new List<GameObject>();
+    List<Vector3> snakeHeadPosHistories = new List<Vector3>();
+
     [SerializeField, Range(0, 1)]
     float moveInterval = 1f;
 
     bool isHitObstacle;
+    bool isGameOver;
     int length = 1;
 
     Direction direction = Direction.Up;
@@ -64,6 +72,13 @@ public class SnakeController : MonoBehaviour
                 break;
             }
             transform.Translate(Vector3.forward);
+            snakeHeadPosHistories.Add(transform.position);
+
+            for (int i = 0; i < snakeBodies.Count; i++)
+            {
+                snakeBodies[i].transform.position = snakeHeadPosHistories[snakeHeadPosHistories.Count - 2 - i];
+            }
+
             yield return new WaitForSeconds(moveInterval);
         }
         print("GameOver");
@@ -74,21 +89,33 @@ public class SnakeController : MonoBehaviour
         switch (other.tag)
         {
             case "Border":
+            case "SnakeBody":
                 isHitObstacle = true;
                 break;
             case "Food":
                 Destroy(other.gameObject);
                 gameController.GenerateNextFood();
-                print(string.Format("Length={0}", ++length));
+                GenerateBody();
                 break;
         }
     }
 
+    void GenerateBody()
+    {
+        GameObject body = Instantiate(snakeBody,
+            snakeHeadPosHistories[snakeHeadPosHistories.Count - 2],
+            Quaternion.identity);
+        snakeBodies.Add(body);
+    }
+
     private void OnTriggerExit(Collider other)
     {
-        if (other.tag.Equals("Border"))
+        switch (other.tag)
         {
-            isHitObstacle = false;
+            case "Border":
+            case "SnakeBody":
+                isHitObstacle = false;
+                break;
         }
     }
 }

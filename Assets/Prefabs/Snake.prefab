@@ -230,6 +230,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7979b38d554e7d4fb4eec119339ee43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  snakeBody: {fileID: 2580762592715799418, guid: eb4e834974d90d94a9bcce8203c1e7f7, type: 3}
   moveInterval: 1
 --- !u!33 &1623627678184065532
 MeshFilter:
