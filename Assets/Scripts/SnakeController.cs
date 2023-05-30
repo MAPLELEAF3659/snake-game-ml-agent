@@ -28,6 +28,7 @@ public class SnakeController : MonoBehaviour
     bool isHitObstacle;
     bool isGameOver;
     int length = 1;
+    bool isTurnning;
 
     Direction direction = Direction.Up;
 
@@ -39,25 +40,30 @@ public class SnakeController : MonoBehaviour
 
     void Update()
     {
+        if (isTurnning)
+        {
+            return;
+        }
+
         if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && !direction.Equals(Direction.Down))
         {
-            transform.rotation = Quaternion.Euler(0, 0, 0);
             direction = Direction.Up;
+            isTurnning = true;
         }
         else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow) && !direction.Equals(Direction.Left))
         {
-            transform.rotation = Quaternion.Euler(0, 90, 0);
             direction = Direction.Right;
+            isTurnning = true;
         }
         else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow) && !direction.Equals(Direction.Up))
         {
-            transform.rotation = Quaternion.Euler(0, 180, 0);
             direction = Direction.Down;
+            isTurnning = true;
         }
         else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) && !direction.Equals(Direction.Right))
         {
-            transform.rotation = Quaternion.Euler(0, 270, 0);
             direction = Direction.Left;
+            isTurnning = true;
         }
     }
 
@@ -66,21 +72,50 @@ public class SnakeController : MonoBehaviour
     {
         while (true)
         {
+            // check if hit obstacle
             tick = isHitObstacle ? tick + 1 : 0;
             if (tick >= 1)
             {
                 break;
             }
+
+            // turn around
+            if (isTurnning)
+            {
+                switch (direction)
+                {
+                    case Direction.Up:
+                        transform.rotation = Quaternion.Euler(0, 0, 0);
+                        break;
+                    case Direction.Right:
+                        transform.rotation = Quaternion.Euler(0, 90, 0);
+                        break;
+                    case Direction.Down:
+                        transform.rotation = Quaternion.Euler(0, 180, 0);
+                        break;
+                    case Direction.Left:
+                        transform.rotation = Quaternion.Euler(0, 270, 0);
+                        break;
+
+                }
+                isTurnning = false;
+            }
+
+            // move forward
             transform.Translate(Vector3.forward);
             snakeHeadPosHistories.Add(transform.position);
 
+            // update body pos
             for (int i = 0; i < snakeBodies.Count; i++)
             {
                 snakeBodies[i].transform.position = snakeHeadPosHistories[snakeHeadPosHistories.Count - 2 - i];
             }
 
+            // wait for interval
             yield return new WaitForSeconds(moveInterval);
         }
+
+        // stop moving
         print("GameOver");
     }
 
