@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Border
   - Sanke
+  - Food
+  - FoodGenerator
   layers:
   - Default
   - TransparentFX

@@ -1,16 +1,21 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 public class SnakeController : MonoBehaviour
 {
-    [SerializeField, Range(0, 5)]
+    GameController gameController;
+
+    [SerializeField, Range(0, 1)]
     float moveInterval = 1f;
 
-    bool isHit;
+    bool isHitObstacle;
+    int length = 1;
 
     void Start()
     {
+        gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
         StartCoroutine(Move());
     }
 
@@ -34,21 +39,42 @@ public class SnakeController : MonoBehaviour
         }
     }
 
+    int tick = 0;
     IEnumerator Move()
     {
-        while (!isHit)
+        while (true)
         {
+            tick = isHitObstacle ? tick + 1 : 0;
+            if (tick >= 1)
+            {
+                break;
+            }
             transform.Translate(Vector3.forward);
             yield return new WaitForSeconds(moveInterval);
         }
+        print("GameOver");
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        switch (other.tag)
+        {
+            case "Border":
+                isHitObstacle = true;
+                break;
+            case "Food":
+                Destroy(other.gameObject);
+                gameController.GenerateNextFood();
+                print(string.Format("Length={0}", ++length));
+                break;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
         if (other.tag.Equals("Border"))
         {
-            isHit = true;
-            print("GameOver");
+            isHitObstacle = false;
         }
     }
 }
