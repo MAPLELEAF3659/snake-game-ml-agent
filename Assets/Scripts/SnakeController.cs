@@ -6,6 +6,8 @@ public class SnakeController : MonoBehaviour
 {
     [SerializeField, Range(0, 1)]
     float moveInterval = 1f;
+
+    bool isHit;
     // Start is called before the first frame update
     void Start()
     {
@@ -14,10 +16,19 @@ public class SnakeController : MonoBehaviour
 
     IEnumerator Move()
     {
-        while (true)
+        while (!isHit)
         {
             transform.Translate(Vector3.forward);
             yield return new WaitForSeconds(moveInterval);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag.Equals("Border"))
+        {
+            isHit = true;
+            print("GameOver");
         }
     }
 }
