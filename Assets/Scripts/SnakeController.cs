@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 enum Direction
@@ -19,16 +20,19 @@ public class SnakeController : MonoBehaviour
 
     [SerializeField]
     GameObject snakeBody;
-    List<GameObject> snakeBodies = new List<GameObject>();
-    List<Vector3> snakeHeadPosHistories = new List<Vector3>();
+    [ReadOnly]
+    public List<GameObject> snakeBodies = new List<GameObject>();
+    [ReadOnly]
+    public List<Vector3> snakePosHistories = new List<Vector3>();
 
     [SerializeField, Range(0, 1)]
     float moveInterval = 1f;
 
     bool isHitObstacle;
     bool isGameOver;
-    int length = 1;
+    int length = 0;
     bool isTurnning;
+    bool isGrowwing;
 
     Direction direction = Direction.Up;
 
@@ -101,15 +105,27 @@ public class SnakeController : MonoBehaviour
                 isTurnning = false;
             }
 
+            if (isGrowwing)
+            {
+                GenerateBody();
+                isGrowwing = false;
+            }
+
             // move forward
             transform.Translate(Vector3.forward);
-            snakeHeadPosHistories.Add(transform.position);
 
             // update body pos
             for (int i = 0; i < snakeBodies.Count; i++)
             {
-                snakeBodies[i].transform.position = snakeHeadPosHistories[snakeHeadPosHistories.Count - 2 - i];
+                snakeBodies[i].transform.position = snakePosHistories[snakePosHistories.Count - 1 - i];
             }
+            for (int i = 0; i < snakePosHistories.Count; i++)
+            {
+                if (i < snakePosHistories.Count - length)
+                    snakePosHistories.RemoveAt(i);
+            }
+
+            snakePosHistories.Add(transform.position);
 
             // wait for interval
             yield return new WaitForSeconds(moveInterval);
@@ -130,17 +146,9 @@ public class SnakeController : MonoBehaviour
             case "Food":
                 Destroy(other.gameObject);
                 gameController.GenerateNextFood();
-                GenerateBody();
+                isGrowwing = true;
                 break;
         }
-    }
-
-    void GenerateBody()
-    {
-        GameObject body = Instantiate(snakeBody,
-            snakeHeadPosHistories[snakeHeadPosHistories.Count - 2],
-            Quaternion.identity);
-        snakeBodies.Add(body);
     }
 
     private void OnTriggerExit(Collider other)
@@ -152,5 +160,14 @@ public class SnakeController : MonoBehaviour
                 isHitObstacle = false;
                 break;
         }
+    }
+
+    void GenerateBody()
+    {
+        GameObject body = Instantiate(snakeBody,
+            snakePosHistories[snakePosHistories.Count - 1],
+            Quaternion.identity);
+        snakeBodies.Add(body);
+        length++;
     }
 }
