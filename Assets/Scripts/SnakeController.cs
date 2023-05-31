@@ -25,15 +25,15 @@ public class SnakeController : MonoBehaviour
     [ReadOnly]
     public List<Vector3> snakePosHistories = new List<Vector3>();
 
-    [SerializeField, Range(0, 1)]
-    float moveInterval = 1f;
+    [SerializeField, Range(0, 0.5f)]
+    float moveInterval = 0.5f;
 
     bool isHitObstacle;
     bool isGameOver;
     bool isTurnning;
     bool isGrowwing;
 
-    Direction direction = Direction.Right;
+    [SerializeField] Direction direction = Direction.Right;
 
     void Awake()
     {
@@ -47,23 +47,40 @@ public class SnakeController : MonoBehaviour
             return;
         }
 
-        if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && !direction.Equals(Direction.Down))
+        // **up/down/left/right key events**
+        if ((Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.UpArrow)))// try to turn up
         {
+            if (direction == Direction.Down) // check if turnning back
+            {
+                return;
+            }
             direction = Direction.Up;
             isTurnning = true;
         }
-        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow) && !direction.Equals(Direction.Left))
+        if (Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow))// try to turn right
         {
+            if (direction == Direction.Left) // check if turnning back
+            {
+                return;
+            }
             direction = Direction.Right;
             isTurnning = true;
         }
-        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow) && !direction.Equals(Direction.Up))
+        if (Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.DownArrow))// try to turn down
         {
+            if (direction == Direction.Up) // check if turnning back
+            {
+                return;
+            }
             direction = Direction.Down;
             isTurnning = true;
         }
-        else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) && !direction.Equals(Direction.Right))
+        if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow)) // try to turn left
         {
+            if (direction == Direction.Right) // check if turnning back
+            {
+                return;
+            }
             direction = Direction.Left;
             isTurnning = true;
         }
@@ -73,8 +90,8 @@ public class SnakeController : MonoBehaviour
     {
         while (true)
         {
-            // check if hit obstacle
-            if (isHitObstacle && !isTurnning)
+            // check if hit obstacle or all clear
+            if (isHitObstacle || (snakeBodies.Count + 1 == 128))
             {
                 break;
             }
@@ -96,14 +113,9 @@ public class SnakeController : MonoBehaviour
                     case Direction.Left:
                         transform.rotation = Quaternion.Euler(0, 270, 0);
                         break;
-
                 }
                 isTurnning = false;
             }
-
-            // move forward
-            transform.position += transform.forward;
-            transform.position = new Vector3(Mathf.Round(transform.position.x), 0, Mathf.Round(transform.position.z));
 
             // grow 1 body
             if (isGrowwing)
@@ -111,6 +123,10 @@ public class SnakeController : MonoBehaviour
                 GenerateBody();
                 isGrowwing = false;
             }
+
+            // move forward
+            transform.position += transform.forward;
+            transform.position = new Vector3(Mathf.Round(transform.position.x), 0, Mathf.Round(transform.position.z));
 
             // update body pos
             for (int i = 0; i < snakeBodies.Count; i++)
@@ -162,17 +178,6 @@ public class SnakeController : MonoBehaviour
             case "Border":
             case "SnakeBody":
                 isHitObstacle = true;
-                break;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        switch (other.tag)
-        {
-            case "Border":
-            case "SnakeBody":
-                isHitObstacle = false;
                 break;
             case "Food":
                 Destroy(other.gameObject);

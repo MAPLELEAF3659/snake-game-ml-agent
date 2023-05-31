@@ -233,7 +233,7 @@ MonoBehaviour:
   snakeBody: {fileID: 2580762592715799418, guid: eb4e834974d90d94a9bcce8203c1e7f7, type: 3}
   snakeBodies: []
   snakePosHistories: []
-  moveInterval: 1
+  moveInterval: 0.5
 --- !u!33 &1623627678184065532
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -296,7 +296,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.9, y: 0.9, z: 0.9}
-  m_Center: {x: 0, y: 0, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &1045502151240775267
 Rigidbody:
   m_ObjectHideFlags: 0
