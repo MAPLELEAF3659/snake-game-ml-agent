@@ -42,9 +42,9 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void GenerateNextFood()
+    public void GenerateNextFood(List<Vector3> posHistories)
     {
-        foodGenerator.GenerateFood();
+        foodGenerator.GenerateFood(posHistories);
     }
 
     public void GameOver()
@@ -69,7 +69,7 @@ public class GameController : MonoBehaviour
 
     public void StartGame()
     {
-        GenerateNextFood();
+        GenerateNextFood(snakeController.snakePosHistories);
         snakeController.StartMove();
         isGameOver = false;
     }
