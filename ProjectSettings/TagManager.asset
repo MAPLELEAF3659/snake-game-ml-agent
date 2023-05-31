@@ -5,10 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - Border
-  - Sanke
   - Food
   - FoodGenerator
   - SnakeBody
+  - Snake
   layers:
   - Default
   - TransparentFX

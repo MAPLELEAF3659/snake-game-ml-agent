@@ -30,21 +30,19 @@ public class SnakeController : MonoBehaviour
 
     bool isHitObstacle;
     bool isGameOver;
-    int length = 0;
     bool isTurnning;
     bool isGrowwing;
 
-    Direction direction = Direction.Up;
+    Direction direction = Direction.Right;
 
-    void Start()
+    void Awake()
     {
         gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
-        StartCoroutine(Move());
     }
 
     void Update()
     {
-        if (isTurnning)
+        if (isGameOver || isTurnning)
         {
             return;
         }
@@ -105,6 +103,7 @@ public class SnakeController : MonoBehaviour
                 isTurnning = false;
             }
 
+            // grow 1 body
             if (isGrowwing)
             {
                 GenerateBody();
@@ -121,7 +120,7 @@ public class SnakeController : MonoBehaviour
             }
             for (int i = 0; i < snakePosHistories.Count; i++)
             {
-                if (i < snakePosHistories.Count - length)
+                if (i < snakePosHistories.Count - snakeBodies.Count)
                     snakePosHistories.RemoveAt(i);
             }
 
@@ -131,8 +130,30 @@ public class SnakeController : MonoBehaviour
             yield return new WaitForSeconds(moveInterval);
         }
 
-        // stop moving
-        print("GameOver");
+        isGameOver = true;
+        gameController.GameOver();
+    }
+
+    public void StartMove()
+    {
+        StartCoroutine(Move());
+    }
+
+    public void Reset()
+    {
+        snakePosHistories.Clear();
+        foreach (var snake in snakeBodies)
+        {
+            Destroy(snake);
+        }
+        snakeBodies.Clear();
+        gameController.UpdateLengthText(snakeBodies.Count + 1);
+        transform.position = new Vector3(-5.5f, 0, 0.5f);
+        isHitObstacle = false;
+        isGrowwing = false;
+        isGameOver = false;
+        direction = Direction.Right;
+        isTurnning = true;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -168,6 +189,6 @@ public class SnakeController : MonoBehaviour
             snakePosHistories[snakePosHistories.Count - 1],
             Quaternion.identity);
         snakeBodies.Add(body);
-        length++;
+        gameController.UpdateLengthText(snakeBodies.Count + 1);
     }
 }
