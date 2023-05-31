@@ -101,16 +101,16 @@ public class SnakeController : MonoBehaviour
                 isTurnning = false;
             }
 
+            // move forward
+            transform.position += transform.forward;
+            transform.position = new Vector3(Mathf.Round(transform.position.x), 0, Mathf.Round(transform.position.z));
+
             // grow 1 body
             if (isGrowwing)
             {
                 GenerateBody();
                 isGrowwing = false;
             }
-
-            // move forward
-            transform.position += transform.forward;
-            transform.position = new Vector3(Mathf.Round(transform.position.x), 0, Mathf.Round(transform.position.z));
 
             // update body pos
             for (int i = 0; i < snakeBodies.Count; i++)
@@ -163,11 +163,6 @@ public class SnakeController : MonoBehaviour
             case "SnakeBody":
                 isHitObstacle = true;
                 break;
-            case "Food":
-                Destroy(other.gameObject);
-                gameController.GenerateNextFood(snakePosHistories);
-                isGrowwing = true;
-                break;
         }
     }
 
@@ -178,6 +173,11 @@ public class SnakeController : MonoBehaviour
             case "Border":
             case "SnakeBody":
                 isHitObstacle = false;
+                break;
+            case "Food":
+                Destroy(other.gameObject);
+                gameController.GenerateNextFood(snakePosHistories);
+                isGrowwing = true;
                 break;
         }
     }
