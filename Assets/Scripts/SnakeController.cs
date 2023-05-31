@@ -69,14 +69,12 @@ public class SnakeController : MonoBehaviour
         }
     }
 
-    int tick = 0;
     IEnumerator Move()
     {
         while (true)
         {
             // check if hit obstacle
-            tick = isHitObstacle ? tick + 1 : 0;
-            if (tick >= 1)
+            if (isHitObstacle && !isTurnning)
             {
                 break;
             }
@@ -188,6 +186,7 @@ public class SnakeController : MonoBehaviour
         GameObject body = Instantiate(snakeBody,
             snakePosHistories[snakePosHistories.Count - 1],
             Quaternion.identity);
+        body.transform.parent = transform.parent;
         snakeBodies.Add(body);
         gameController.UpdateLengthText(snakeBodies.Count + 1);
     }
