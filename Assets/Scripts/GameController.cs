@@ -55,7 +55,7 @@ public class GameController : MonoBehaviour
 
     public void UpdateLengthText(int length)
     {
-        lengthText.text = string.Format("Length: {0}", length);
+        lengthText.text = string.Format("LENGTH: {0}", length);
     }
 
     public void UpdateTimeText(TimeSpan time)
