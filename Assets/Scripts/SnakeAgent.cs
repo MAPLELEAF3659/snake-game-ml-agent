@@ -14,6 +14,8 @@ public class SnakeAgent : Agent
     float distancePrev;
     int lengthPrev;
 
+    [SerializeField] ObstacleDetector[] obstacleDetectors; // 0,1,2,3=up,down,left,right
+
     public override void OnEpisodeBegin()
     {
         gameController.ResetGame();
@@ -34,16 +36,24 @@ public class SnakeAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
+        // observe snake's direction
         sensor.AddObservation(snakeController.GetDirection() == Direction.Up);
         sensor.AddObservation(snakeController.GetDirection() == Direction.Down);
         sensor.AddObservation(snakeController.GetDirection() == Direction.Left);
         sensor.AddObservation(snakeController.GetDirection() == Direction.Right);
-        sensor.AddObservation(snakeController.GetLocalPos().x);
-        sensor.AddObservation(snakeController.GetLocalPos().y);
-        sensor.AddObservation(gameController.GetCurrentFoodLocalPos().x);
-        sensor.AddObservation(gameController.GetCurrentFoodLocalPos().y);
-        sensor.AddObservation(lengthPrev);
-        sensor.AddObservation(distancePrev);
+
+        Vector3 snakePos = snakeController.GetLocalPos();
+        sensor.AddObservation(snakePos.x);
+        sensor.AddObservation(snakePos.z);
+
+        Vector3 fooodPos = gameController.GetCurrentFoodLocalPos();
+        sensor.AddObservation(fooodPos.x);
+        sensor.AddObservation(fooodPos.z);
+
+        sensor.AddObservation(obstacleDetectors[0].GetDetection()); // observe if snake close to obstacle/food(4 directions)
+        sensor.AddObservation(obstacleDetectors[1].GetDetection()); // 0,1,2,3=up,down,left,right
+        sensor.AddObservation(obstacleDetectors[2].GetDetection());
+        sensor.AddObservation(obstacleDetectors[3].GetDetection());
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -68,32 +78,28 @@ public class SnakeAgent : Agent
 
         if (gameController.isGameOver)
         {
-            AddReward(-10f);
-            //print(string.Format("Game over! length: {0}, reward: {1}", snakeController.GetLength(), GetCumulativeReward()));
+            AddReward(-1);
             EndEpisode();
             return;
         }
 
-        //AddReward(-0.005f); //every step
-
         if (snakeController.GetLength() != lengthPrev) //eat food
         {
-            AddReward(3f);
+            AddReward(0.1f);
             lengthPrev = snakeController.GetLength();
-            //print("eat food! reward(+0.1): " + GetCumulativeReward());
-            return;
         }
 
-        if (gameController.GetDistanceBetweenSnakeFood() < distancePrev)
+        if (gameController.GetDistanceBetweenSnakeFood() != distancePrev)
         {
-            AddReward(0.2f); // close to food
-            //print("dist(close): " + distancePrev + ", reward(+0.01): " + GetCumulativeReward());
+            if (gameController.GetDistanceBetweenSnakeFood() < distancePrev)
+            {
+                AddReward(0.01f); // close to food
+            }
+            else if (gameController.GetDistanceBetweenSnakeFood() > distancePrev)
+            {
+                AddReward(-0.01f); // go away from food
+            }
+            distancePrev = gameController.GetDistanceBetweenSnakeFood();
         }
-        else if (gameController.GetDistanceBetweenSnakeFood() > distancePrev)
-        {
-            AddReward(-0.05f); // go away from food
-            //print("dist(go away): " + distancePrev + ", reward(-0.01): " + GetCumulativeReward());
-        }
-        distancePrev = gameController.GetDistanceBetweenSnakeFood();
     }
 }
