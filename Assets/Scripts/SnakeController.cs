@@ -16,7 +16,7 @@ public enum Direction
 
 public class SnakeController : MonoBehaviour
 {
-    GameController gameController;
+    [SerializeField] GameController gameController;
 
     [SerializeField]
     GameObject snakeBody;
@@ -29,17 +29,11 @@ public class SnakeController : MonoBehaviour
     float moveInterval = 0.5f;
     float timerTick = 0f;
 
-    bool isHitObstacle;
     bool isGameOver = true;
     bool isTurnning;
     bool isGrowwing;
 
     Direction direction = Direction.Right;
-
-    void Awake()
-    {
-        gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
-    }
 
     void Update()
     {
@@ -84,11 +78,12 @@ public class SnakeController : MonoBehaviour
             timerTick = 0;
         }
 
-        // check if hit obstacle or all clear
-        if (isHitObstacle || (snakeBodies.Count + 1 == 128))
+        // check if all clear
+        if (GetLength() == 128)
         {
             isGameOver = true;
             gameController.GameOver();
+            return;
         }
 
         // turn around
@@ -150,13 +145,12 @@ public class SnakeController : MonoBehaviour
             Destroy(snake);
         }
         snakeBodies.Clear();
-        gameController.UpdateLengthText(snakeBodies.Count + 1);
-        transform.position = new Vector3(-5, 0, 0);
-        isHitObstacle = false;
+        gameController.UpdateLengthText(GetLength());
+        transform.localPosition = new Vector3(-5, 0, 0);
         isGrowwing = false;
-        isGameOver = false;
         direction = Direction.Right;
         isTurnning = true;
+        isGameOver = false;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -165,10 +159,10 @@ public class SnakeController : MonoBehaviour
         {
             case "Border":
             case "SnakeBody":
-                isHitObstacle = true;
+                isGameOver = true;
+                gameController.GameOver();
                 break;
             case "Food":
-                Destroy(other.gameObject);
                 gameController.GenerateNextFood(snakePosHistories);
                 isGrowwing = true;
                 break;
@@ -222,5 +216,15 @@ public class SnakeController : MonoBehaviour
     public int GetLength()
     {
         return snakeBodies.Count + 1;
+    }
+
+    public Vector3 GetLocalPos()
+    {
+        return transform.localPosition;
+    }
+
+    public Direction GetDirection()
+    {
+        return direction;
     }
 }
