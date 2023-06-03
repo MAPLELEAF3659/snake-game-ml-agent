@@ -1460,7 +1460,7 @@ PrefabInstance:
     - target: {fileID: 8943356284875549382, guid: 95d264cfc2391e74b9fd0610e197e729, type: 3}
       propertyPath: m_Model
       value: 
-      objectReference: {fileID: 5022602860645237092, guid: e6132146ae51942498c6928b5e6fac67, type: 3}
+      objectReference: {fileID: 5022602860645237092, guid: cc3de1faad3172646835d423ac014edd, type: 3}
     - target: {fileID: 8943356284875549383, guid: 95d264cfc2391e74b9fd0610e197e729, type: 3}
       propertyPath: gameController
       value: 
