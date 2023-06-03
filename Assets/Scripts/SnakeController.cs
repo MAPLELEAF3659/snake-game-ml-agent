@@ -6,7 +6,7 @@ using Unity.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 
-enum Direction
+public enum Direction
 {
     Up,
     Down,
@@ -16,7 +16,7 @@ enum Direction
 
 public class SnakeController : MonoBehaviour
 {
-    GameController gameController;
+    [SerializeField] GameController gameController;
 
     [SerializeField]
     GameObject snakeBody;
@@ -25,20 +25,15 @@ public class SnakeController : MonoBehaviour
     [ReadOnly]
     public List<Vector3> snakePosHistories = new List<Vector3>();
 
-    [SerializeField, Range(0, 0.5f)]
+    [SerializeField, Range(0, 1f)]
     float moveInterval = 0.5f;
+    float timerTick = 0f;
 
-    bool isHitObstacle;
-    bool isGameOver;
+    bool isGameOver = true;
     bool isTurnning;
     bool isGrowwing;
 
-    [SerializeField] Direction direction = Direction.Right;
-
-    void Awake()
-    {
-        gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
-    }
+    Direction direction = Direction.Right;
 
     void Update()
     {
@@ -48,110 +43,98 @@ public class SnakeController : MonoBehaviour
         }
 
         // **up/down/left/right key events**
-        if ((Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.UpArrow)))// try to turn up
+        if ((Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.UpArrow)))
         {
-            if (direction == Direction.Down) // check if turnning back
-            {
-                return;
-            }
-            direction = Direction.Up;
-            isTurnning = true;
+            TryToTurn(Direction.Up); // try to turn up
         }
-        if (Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow))// try to turn right
+        if (Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow))
         {
-            if (direction == Direction.Left) // check if turnning back
-            {
-                return;
-            }
-            direction = Direction.Right;
-            isTurnning = true;
+            TryToTurn(Direction.Right); // try to turn right
         }
-        if (Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.DownArrow))// try to turn down
+        if (Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.DownArrow))
         {
-            if (direction == Direction.Up) // check if turnning back
-            {
-                return;
-            }
-            direction = Direction.Down;
-            isTurnning = true;
+            TryToTurn(Direction.Down); // try to turn down
         }
-        if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow)) // try to turn left
+        if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow))
         {
-            if (direction == Direction.Right) // check if turnning back
-            {
-                return;
-            }
-            direction = Direction.Left;
-            isTurnning = true;
+            TryToTurn(Direction.Left); // try to turn left
         }
     }
 
-    IEnumerator Move()
+    void FixedUpdate()
     {
-        while (true)
+        if (isGameOver)
         {
-            // check if hit obstacle or all clear
-            if (isHitObstacle || (snakeBodies.Count + 1 == 128))
-            {
-                break;
-            }
-
-            // turn around
-            if (isTurnning)
-            {
-                switch (direction)
-                {
-                    case Direction.Up:
-                        transform.rotation = Quaternion.Euler(0, 0, 0);
-                        break;
-                    case Direction.Right:
-                        transform.rotation = Quaternion.Euler(0, 90, 0);
-                        break;
-                    case Direction.Down:
-                        transform.rotation = Quaternion.Euler(0, 180, 0);
-                        break;
-                    case Direction.Left:
-                        transform.rotation = Quaternion.Euler(0, 270, 0);
-                        break;
-                }
-                isTurnning = false;
-            }
-
-            // grow 1 body
-            if (isGrowwing)
-            {
-                GenerateBody();
-                isGrowwing = false;
-            }
-
-            // move forward
-            transform.position += transform.forward;
-            transform.position = new Vector3(Mathf.Round(transform.position.x), 0, Mathf.Round(transform.position.z));
-
-            // update body pos
-            for (int i = 0; i < snakeBodies.Count; i++)
-            {
-                snakeBodies[i].transform.position = snakePosHistories[snakePosHistories.Count - 1 - i];
-            }
-            for (int i = 0; i < snakePosHistories.Count; i++)
-            {
-                if (i < snakePosHistories.Count - snakeBodies.Count)
-                    snakePosHistories.RemoveAt(i);
-            }
-
-            snakePosHistories.Add(transform.position);
-
-            // wait for interval
-            yield return new WaitForSeconds(moveInterval);
+            return;
         }
 
-        isGameOver = true;
-        gameController.GameOver();
+        if (timerTick < moveInterval)
+        {
+            timerTick += Time.fixedDeltaTime;
+            return;
+        }
+        else
+        {
+            timerTick = 0;
+        }
+
+        // check if all clear
+        if (GetLength() == 128)
+        {
+            isGameOver = true;
+            gameController.GameOver();
+            return;
+        }
+
+        // turn around
+        if (isTurnning)
+        {
+            switch (direction)
+            {
+                case Direction.Up:
+                    transform.rotation = Quaternion.Euler(0, 0, 0);
+                    break;
+                case Direction.Right:
+                    transform.rotation = Quaternion.Euler(0, 90, 0);
+                    break;
+                case Direction.Down:
+                    transform.rotation = Quaternion.Euler(0, 180, 0);
+                    break;
+                case Direction.Left:
+                    transform.rotation = Quaternion.Euler(0, 270, 0);
+                    break;
+            }
+            isTurnning = false;
+        }
+
+        // grow 1 body
+        if (isGrowwing)
+        {
+            GenerateBody();
+            isGrowwing = false;
+        }
+
+        // move forward
+        transform.position += transform.forward;
+        transform.position = new Vector3(Mathf.Round(transform.position.x), 0, Mathf.Round(transform.position.z));
+
+        // update body pos
+        for (int i = 0; i < snakeBodies.Count; i++)
+        {
+            snakeBodies[i].transform.position = snakePosHistories[snakePosHistories.Count - 1 - i];
+        }
+        for (int i = 0; i < snakePosHistories.Count; i++)
+        {
+            if (i < snakePosHistories.Count - snakeBodies.Count)
+                snakePosHistories.RemoveAt(i);
+        }
+        snakePosHistories.Add(transform.position);
     }
 
     public void StartMove()
     {
-        StartCoroutine(Move());
+        snakePosHistories.Add(transform.position);
+        isGameOver = false;
     }
 
     public void Reset()
@@ -162,13 +145,12 @@ public class SnakeController : MonoBehaviour
             Destroy(snake);
         }
         snakeBodies.Clear();
-        gameController.UpdateLengthText(snakeBodies.Count + 1);
-        transform.position = new Vector3(-5, 0, 0);
-        isHitObstacle = false;
+        gameController.UpdateLengthText(GetLength());
+        transform.localPosition = new Vector3(-5, 0, 0);
         isGrowwing = false;
-        isGameOver = false;
         direction = Direction.Right;
         isTurnning = true;
+        isGameOver = false;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -177,10 +159,10 @@ public class SnakeController : MonoBehaviour
         {
             case "Border":
             case "SnakeBody":
-                isHitObstacle = true;
+                isGameOver = true;
+                gameController.GameOver();
                 break;
             case "Food":
-                Destroy(other.gameObject);
                 gameController.GenerateNextFood(snakePosHistories);
                 isGrowwing = true;
                 break;
@@ -195,5 +177,54 @@ public class SnakeController : MonoBehaviour
         body.transform.parent = transform.parent;
         snakeBodies.Add(body);
         gameController.UpdateLengthText(snakeBodies.Count + 1);
+    }
+
+    public void TryToTurn(Direction targetDirection)
+    {
+        switch (targetDirection)
+        {
+            case Direction.Up:
+                if (direction == Direction.Down)// check if turnning back
+                {
+                    return;
+                }
+                break;
+            case Direction.Down:
+                if (direction == Direction.Up)// check if turnning back
+                {
+                    return;
+                }
+                break;
+            case Direction.Left:
+                if (direction == Direction.Right)// check if turnning back
+                {
+                    return;
+                }
+                break;
+            case Direction.Right:
+                if (direction == Direction.Left)// check if turnning back
+                {
+                    return;
+                }
+                break;
+        }
+
+        direction = targetDirection;
+        isTurnning = true;
+    }
+
+    public int GetLength()
+    {
+        return snakeBodies.Count + 1;
+    }
+
+    public Vector3 GetLocalPos()
+    {
+        return transform.localPosition;
+    }
+
+    public Direction GetDirection()
+    {
+        return direction;
     }
 }

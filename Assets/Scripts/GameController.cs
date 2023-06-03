@@ -7,25 +7,13 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    FoodGenerator foodGenerator;
-    SnakeController snakeController;
+    [SerializeField] FoodGenerator foodGenerator;
+    [SerializeField] SnakeController snakeController;
     [SerializeField] TMP_Text gameOverText;
     [SerializeField] TMP_Text lengthText;
     [SerializeField] TMP_Text timeText;
     [ReadOnly] public TimeSpan time;
     [ReadOnly] public bool isGameOver = true;
-
-    private void Awake()
-    {
-        foodGenerator = GameObject.FindGameObjectWithTag("FoodGenerator").GetComponent<FoodGenerator>();
-        snakeController = GameObject.FindGameObjectWithTag("Snake").GetComponent<SnakeController>();
-    }
-
-    private void Start()
-    {
-        ResetGame();
-        StartGame();
-    }
 
     private void Update()
     {
@@ -55,7 +43,7 @@ public class GameController : MonoBehaviour
 
     public void UpdateLengthText(int length)
     {
-        lengthText.text = string.Format("Length: {0}", length);
+        lengthText.text = string.Format("LENGTH: {0}", length);
     }
 
     public void UpdateTimeText(TimeSpan time)
@@ -69,7 +57,6 @@ public class GameController : MonoBehaviour
 
     public void StartGame()
     {
-        GenerateNextFood(snakeController.snakePosHistories);
         snakeController.StartMove();
         isGameOver = false;
     }
@@ -78,11 +65,19 @@ public class GameController : MonoBehaviour
     {
         gameOverText.text = "";
         snakeController.Reset();
+        foodGenerator.DestoryFoodCurrent();
+        GenerateNextFood(snakeController.snakePosHistories);
         time = TimeSpan.Zero;
         UpdateTimeText(time);
-        foreach (var food in GameObject.FindGameObjectsWithTag("Food"))
-        {
-            Destroy(food);
-        }
+    }
+
+    public float GetDistanceBetweenSnakeFood()
+    {
+        return Vector3.Distance(foodGenerator.GetFoodCurrentLocalPos(), snakeController.GetLocalPos());
+    }
+
+    public Vector3 GetCurrentFoodLocalPos()
+    {
+        return foodGenerator.GetFoodCurrentLocalPos();
     }
 }
