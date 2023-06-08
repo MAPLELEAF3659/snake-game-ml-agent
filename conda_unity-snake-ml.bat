@@ -1,4 +1,4 @@
 @echo off
-call C:/ProgramData/Anaconda3/Scripts/activate.bat unity-snake-ml
-cd  .
+cd /D "%~dp0"
+call C:/Users/<user>/anaconda3/Scripts/activate.bat unity-snake-ml
 cmd /f
