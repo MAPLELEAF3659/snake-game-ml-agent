@@ -1,6 +1,6 @@
-# snake-game-ml-agent(Anaconda Game Agent)
+#snake-game-ml-agent(Anaconda Game Agent)
 
-## Project setup
+##Project setup
 
 1. Create Anaconda env using conda_env.yaml
 
